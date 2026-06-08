@@ -1,9 +1,9 @@
 """
-SSD-only blend release runner.
+SSD-backed QCFuse blend runner.
 
 Usage:
     python sglang_blend_ssd.py --model qwen3-8b --dataset hotpotqa \
-        --model_dir /path/to/models --baseline ours
+        --model_dir models --baseline ours
 """
 
 import argparse
@@ -37,7 +37,7 @@ from blend_common import (
     set_ours_layers,
     BlendEngineBase,
 )
-from release_config import (
+from qcfuse_config import (
     DEFAULT_BLEND_RATIO,
     DEFAULT_CONTEXT_N_SINK,
     DEFAULT_CRITICAL_LAYERS,
@@ -87,7 +87,7 @@ class SSDPipelineEngine(BlendEngineBase):
         model_path: str,
         baseline: str = "ours",
         context_enhance: bool = False,
-        cache_dir: str = "/path/to/cache",
+        cache_dir: str = "cache/qcfuse",
         digest_index_method: str = DIGEST_INDEX_METHOD,
         digest_ratio: float = DIGEST_RATIO,
         context_cache_source: str = "none",
@@ -506,7 +506,7 @@ class SSDPipelineEngine(BlendEngineBase):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SSD-only blend release runner")
+    parser = argparse.ArgumentParser(description="SSD-backed QCFuse blend runner")
     parser.add_argument("--data_dir", default=str(DEFAULT_DATA_DIR))
     parser.add_argument(
         "--baseline",
@@ -531,7 +531,7 @@ def main():
         "--model_dir", type=str, default="", help="Base model directory"
     )
     parser.add_argument(
-        "--cache_dir", type=str, default="/path/to/cache",
+        "--cache_dir", type=str, default="cache/qcfuse",
         help="Base SSD directory for KV cache storage",
     )
     args = parser.parse_args()

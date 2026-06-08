@@ -147,7 +147,8 @@ def build_prompt_for_dataset(
         q_prompt: [query_prefix, input_text]
     """
     context = example.get("context", "")
-    context = context[: min(len(context), DEFAULT_CHUNK_TOPK)]
+    if dataset_name not in RULER_DATASETS:
+        context = context[: min(len(context), DEFAULT_CHUNK_TOPK)]
     docs = [f"Passage:\n{ctx}\n\n" for ctx in context]
 
     input_text = example.get("input", "")

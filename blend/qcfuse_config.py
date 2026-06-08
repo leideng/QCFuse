@@ -1,4 +1,4 @@
-"""Release configuration for the SSD-only blend runner."""
+"""QCFuse configuration for the SSD-backed blend runner."""
 
 DIGEST_INDEX_LABEL = "kvzip@10%"
 DIGEST_INDEX_METHOD = "kvzip"

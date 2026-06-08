@@ -10,7 +10,7 @@ from transformers import AutoTokenizer, AutoConfig
 import sglang as sgl
 from sglang.srt.utils.triton_attention_score import warmup_triton_kernels
 
-from release_config import (
+from qcfuse_config import (
     DEFAULT_CRITICAL_LAYERS,
     MODEL_TOP10_CRITICAL_LAYERS,
     SUPPORTED_BASELINES,

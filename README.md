@@ -2,22 +2,31 @@
 
 <p align="center">
   <a href="http://arxiv.org/abs/2606.05875"><img src="https://img.shields.io/badge/Paper-arXiv%3A2606.05875-b31b1b" alt="Paper"></a>
-  <img src="https://img.shields.io/badge/SGLang-0.5.4-2563eb" alt="SGLang 0.5.4">
 </p>
 
 QCFuse is a **pipeline-constrained, query-aware KV cache fusion** system for
 efficient long-context RAG generation. This repository contains the QCFuse
-research release described in [arXiv:2606.05875](http://arxiv.org/abs/2606.05875).
+research artifact described in [arXiv:2606.05875](http://arxiv.org/abs/2606.05875).
 
 ## ✨ Highlights
 
-- **Full-prefill-level quality.** QCFuse preserves the quality of full prefill.
-- **Matched-quality speedup.** QCFuse achieves an average prefill-time speedup
+<p align="center">
+  <img src="md/3sys_framework_01.png" alt="QCFuse framework overview" width="900">
+</p>
+
+<p align="center">
+  <em>QCFuse builds a compact query-aware view for pipelined cache fusion in RAG serving.</em>
+</p>
+
+- **Query-aware compressed view.** QCFuse shortens selector analysis time,
+  reduces selection-signal noise, and better balances query awareness with
+  pipeline execution efficiency.
+- **Matched-quality speedup.** Under matched-quality comparisons, QCFuse achieves an average prefill-time speedup
   of **1.7x** over full prefill and **1.5x** over ProphetKV, the strongest
   quality-preserving baseline.
-- **Fastest under strict quality control.** Under a **2% relative quality drop**
-  criterion, QCFuse is the fastest method among all compared methods that
-  satisfies the constraint, with a **2.1x** average speedup.
+- **Fastest under strict quality control.** Under a **1% relative quality drop**
+  criterion, QCFuse is the only compared method that satisfies the constraint,
+  with a **1.9x** average TTFT speedup over full prefill.
 
 ## 📊 Results
 
@@ -26,15 +35,38 @@ research release described in [arXiv:2606.05875](http://arxiv.org/abs/2606.05875
 </p>
 
 <p align="center">
-  <em>Quality and TTFT trade-off on LongBench and RULER. Lower TTFT and higher quality are better.</em>
+  <em>Quality and TTFT trade-off on LongBench and RULER. </em>
 </p>
 
-## 🧪 Datasets
+## 🗂️ Repository Layout
 
-The release runner expects each evaluation split as a local JSONL file named
+```text
+QCFuse/
+├── blend/                         # QCFuse evaluation runner and configs
+│   ├── sglang_blend_ssd.py         
+│   ├── blend_common.py             
+│   ├── qcfuse_config.py            
+│   └── utils.py      
+├── srt/                           # SGLang runtime changes for QCFuse
+│   ├── entrypoints/                
+│   ├── managers/                   
+│   ├── layers/attention/           
+│   ├── models/                     
+│   └── utils/                      
+├── data/                          # Dataset preprocessing               
+│   ├── build_longbench_data.py      
+│   └── build_ruler_data.py          
+```
+
+## 🗄️ Datasets
+
+The evaluation runner expects each evaluation split as a local JSONL file named
 `{dataset}.jsonl` under `--data_dir`.
 
-| Benchmark | Official source | Tasks used in this release |
+Use the scripts in `data/` to build the evaluation splits reproducibly. See
+[data/README.md](data/README.md) for preprocessing details.
+
+| Benchmark | Official source | Tasks used in this artifact |
 | --- | --- | --- |
 | LongBench | [THUDM/LongBench](https://github.com/THUDM/LongBench) | `musique`, `2wikimqa`, `hotpotqa` |
 | RULER | [NVIDIA/RULER](https://github.com/NVIDIA/RULER) | `ruler_mv` (`MV`), `ruler_mq` (`MQ`), `ruler_vt` (`VT`) |
@@ -49,6 +81,8 @@ cd sglang
 pip install --upgrade pip
 pip install -e "python"
 ```
+
+Return to the QCFuse repository root before running the commands below.
 
 Install the evaluation dependencies used by the Blend runner:
 
@@ -66,12 +100,12 @@ Run the SSD-backed QCFuse method:
 ```bash
 python blend/sglang_blend_ssd.py \
   --model qwen3-8b \
-  --model_dir /path/to/models \
-  --data_dir /path/to/data \
+  --model_dir models \
+  --data_dir data/final_data \
   --dataset hotpotqa \
   --baseline ours \
   --size 200 \
-  --cache_dir /path/to/cache
+  --cache_dir cache/qcfuse
 ```
 
 `--cache_dir` stores the SSD-backed chunk and query caches. With
@@ -83,12 +117,12 @@ Run the full-prefill baseline:
 ```bash
 python blend/sglang_blend_ssd.py \
   --model qwen3-8b \
-  --model_dir /path/to/models \
-  --data_dir /path/to/data \
+  --model_dir models \
+  --data_dir data/final_data \
   --dataset hotpotqa \
   --baseline fullcomp \
   --size 200 \
-  --cache_dir /path/to/cache
+  --cache_dir cache/qcfuse
 ```
 
 Supported `--baseline` values are `ours` and `fullcomp`. Supported `--dataset`
