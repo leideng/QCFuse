@@ -16,6 +16,7 @@ dependencies = [
     "pyarrow>=15,<21",
     "html2text>=2025.4.15",
     "bs4>=0.0.2",
+    "wonderwords>=3.0.1",
 ]
 
 [tool.uv.sources]

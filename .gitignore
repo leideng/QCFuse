@@ -245,3 +245,6 @@ lmms-eval
 uv.lock
 third_party/
 cache/
+data/raw_longbench/
+data/ruler_raw/
+data/final_data/
