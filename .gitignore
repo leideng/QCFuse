@@ -243,3 +243,5 @@ Cargo.lock
 lmms-eval
 
 uv.lock
+third_party/
+cache/
