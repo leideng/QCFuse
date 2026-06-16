@@ -241,3 +241,5 @@ compile_commands.json
 Cargo.lock
 
 lmms-eval
+
+uv.lock

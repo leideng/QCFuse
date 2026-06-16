@@ -4,4 +4,9 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "sglang",
+]
+
+[tool.uv.sources]
+sglang = { git = "https://github.com/sgl-project/sglang.git", subdirectory = "python", rev = "v0.5.4" }
