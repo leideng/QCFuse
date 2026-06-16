@@ -73,18 +73,40 @@ Use the scripts in `data/` to build the evaluation splits reproducibly. See
 
 ## ⚙️ Installation
 
+### Option A: uv (recommended)
+
+From the QCFuse repository root:
+
+```bash
+uv sync
+bash apply_sglang_patch.sh
+```
+
+`uv sync` installs SGLang **0.5.4** from upstream, but QCFuse also ships modified
+SGLang runtime code under `srt/`. Run `apply_sglang_patch.sh` to overlay those
+changes onto the installed `sglang.srt` package.
+
+Re-run `bash apply_sglang_patch.sh` after any `uv sync` that reinstalls sglang.
+
+### Option B: pip editable install
+
 Install SGLang **0.5.4**:
 
 ```bash
 git clone -b v0.5.4 https://github.com/sgl-project/sglang.git
 cd sglang
+rm -rf python/sglang/srt
+cp -r /path/to/QCFuse/srt python/sglang/srt
 pip install --upgrade pip
 pip install -e "python"
 ```
 
 Return to the QCFuse repository root before running the commands below.
 
-Install the evaluation dependencies used by the Blend runner:
+### Evaluation dependencies
+
+If not using `uv sync`, install the evaluation dependencies used by the Blend
+runner:
 
 ```bash
 pip install rouge-score
