@@ -42,6 +42,8 @@ TEMPLATES = {
 BLEND_CONFIG = {
     "fullcomp": ("FULLCOMPUTE", 0, "none"),
     "ours": ("KVCOMPUTE", 0, "attn"),
+    "fuserag": ("KVCOMPUTE", 0, "attn"),
+    "prophetkv": ("KVCOMPUTE", 0, "attn"),
 }
 
 
@@ -117,7 +119,17 @@ def set_ours_layers(
     _set_critical_layers(engine, model_name, layers)
 
 
-# ==================== Base Engine ====================
+def set_fuserag_layers(engine, model_name: str):
+    """Set the last-layer signal used by the FUSE-RAG baseline."""
+    num_layers = engine._get_model_config()["num_layers"]
+    _set_critical_layers(engine, model_name, [num_layers - 1])
+
+
+def set_prophetkv_layers(engine, model_name: str):
+    """Set all-layer signals used by the ProphetKV baseline."""
+    num_layers = engine._get_model_config()["num_layers"]
+    _set_critical_layers(engine, model_name, list(range(num_layers)))
+
 
 class BlendEngineBase:
     """Base class with shared blend engine functionality."""
@@ -125,7 +137,7 @@ class BlendEngineBase:
     def __init__(self, model_path: str, baseline: str = "ours"):
         self.model_name = Path(model_path).name.lower()
         self.model_path = model_path
-        self.context_length = 32000
+        self.context_length = 16000
         self.attn_start = 0
         self.attn_end = -1
         self.critical_layers = None
@@ -133,7 +145,7 @@ class BlendEngineBase:
 
         self.llm = sgl.Engine(
             model_path=model_path,
-            mem_fraction_static=0.8,
+            mem_fraction_static=0.6,
             context_length=self.context_length,
             tp_size=1,
             disable_cuda_graph=True,
@@ -222,7 +234,7 @@ class BlendEngineBase:
         return token_count <= max_allowed, token_count
 
     def _timed_generate(self, prompt: str, params: dict, **kwargs) -> dict:
-        """Run streaming generate and return {text, ttft, decode_time}."""
+        """Run streaming generate and return generated text plus TTFT."""
         start = time.time()
         ttft, text = None, ""
         for out in self.llm.generate(prompt, params, stream=True, **kwargs):
@@ -230,7 +242,7 @@ class BlendEngineBase:
                 ttft = time.time() - start
             text = out.get("text", "")
         ttft = ttft or (time.time() - start)
-        return {"text": text, "ttft": ttft, "decode_time": time.time() - start - ttft}
+        return {"text": text, "ttft": ttft}
 
     def warmup(self, num_warmup: int = 3):
         cfg = self._get_model_config()

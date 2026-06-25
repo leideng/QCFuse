@@ -1,4 +1,24 @@
-!md/
+blend/json_layers/
+blend/figure/
+blend/final_log/
+blend/exp_log/
+blend/tmp_trash/
+blend/test_func/
+needle_haystack/
+blend/longbench/data/
+blend/longbench/split_data/
+blend/longbench/tmp/
+blend/longbench/longbench_log/
+blend/longbench/exp_log/
+blend/longbench/longbench_results/
+blend/longbench/exp_results/
+.trae/
+.exp/
+exp_log/
+.codex/
+.sisyphus/
+tmp/
+test/blend/ppspeed/results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -183,7 +203,6 @@ tmp*.txt
 
 # Plots
 *.png
-!md/*.png
 *.pdf
 
 # personnal
@@ -242,6 +261,8 @@ Cargo.lock
 
 lmms-eval
 
+
+# QCFuse
 uv.lock
 third_party/
 cache/

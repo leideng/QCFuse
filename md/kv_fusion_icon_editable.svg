@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1254" height="1254" viewBox="0 0 1254 1254" role="img" aria-labelledby="title desc">
+  <title id="title">KV cache fusion editable vector icon</title>
+  <desc id="desc">Editable SVG recreation of a blue-cyan magnifying glass, gauge, data blocks, arrow, and interlocking K V cache tiles.</desc>
+  <defs>
+    <linearGradient id="ringGrad" x1="247" y1="173" x2="1045" y2="1004" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#004DDC"/>
+      <stop offset="0.52" stop-color="#006EE0"/>
+      <stop offset="1" stop-color="#05BFC0"/>
+    </linearGradient>
+    <linearGradient id="ringGradAlt" x1="402" y1="262" x2="936" y2="826" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#015FDB"/>
+      <stop offset="0.52" stop-color="#0070DE"/>
+      <stop offset="1" stop-color="#11C1BD"/>
+    </linearGradient>
+    <linearGradient id="needleGrad" x1="666" y1="535" x2="881" y2="313" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#02A9B7"/>
+      <stop offset="0.42" stop-color="#12B9C3"/>
+      <stop offset="1" stop-color="#D9F5FB" stop-opacity="0.92"/>
+    </linearGradient>
+    <linearGradient id="blueTile" x1="511" y1="584" x2="676" y2="790" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#075FE3"/>
+      <stop offset="0.58" stop-color="#0254CB"/>
+      <stop offset="1" stop-color="#0047AD"/>
+    </linearGradient>
+    <linearGradient id="tealTile" x1="667" y1="584" x2="840" y2="792" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#079B9F"/>
+      <stop offset="0.55" stop-color="#009A9B"/>
+      <stop offset="1" stop-color="#007E83"/>
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="304" y1="610" x2="504" y2="673" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1E8DED"/>
+      <stop offset="0.55" stop-color="#055FE0"/>
+      <stop offset="1" stop-color="#004AC5"/>
+    </linearGradient>
+    <linearGradient id="handleGrad" x1="809" y1="812" x2="1034" y2="1033" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0787B2"/>
+      <stop offset="1" stop-color="#08BFB5"/>
+    </linearGradient>
+    <linearGradient id="blockBlue" x1="171" y1="536" x2="327" y2="536" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0065D9"/>
+      <stop offset="0.47" stop-color="#0058D2"/>
+      <stop offset="0.48" stop-color="#4595F4"/>
+      <stop offset="1" stop-color="#65A9FF"/>
+    </linearGradient>
+    <linearGradient id="blockTealBlue" x1="171" y1="619" x2="327" y2="619" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0695B6"/>
+      <stop offset="0.47" stop-color="#0188AC"/>
+      <stop offset="0.48" stop-color="#4AA7F2"/>
+      <stop offset="1" stop-color="#68B2FF"/>
+    </linearGradient>
+    <linearGradient id="blockCyan" x1="171" y1="702" x2="327" y2="702" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#02AEB5"/>
+      <stop offset="0.47" stop-color="#03A3AD"/>
+      <stop offset="0.48" stop-color="#55C7C6"/>
+      <stop offset="1" stop-color="#87DFDE"/>
+    </linearGradient>
+    <linearGradient id="blockPurple" x1="171" y1="785" x2="327" y2="785" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6A35D0"/>
+      <stop offset="0.47" stop-color="#5C2AC9"/>
+      <stop offset="0.48" stop-color="#9A7ADD"/>
+      <stop offset="1" stop-color="#C7B5EF"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#002B6C" flood-opacity="0.10"/>
+    </filter>
+    <filter id="subtleGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2.5" flood-color="#ffffff" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <!-- Transparent background intentionally left blank. -->
+  <g id="icon" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Main magnifier ring -->
+    <g id="magnifier-ring">
+      <circle cx="662" cy="563" r="371" fill="none" stroke="#FFFFFF" stroke-width="136"/>
+      <circle cx="662" cy="563" r="371" fill="none" stroke="url(#ringGrad)" stroke-width="110"/>
+    </g>
+
+    <!-- Handle -->
+    <g id="magnifier-handle">
+      <path d="M839 824 L1013 1004" stroke="#FFFFFF" stroke-width="143"/>
+      <path d="M839 824 L1013 1004" stroke="url(#handleGrad)" stroke-width="106"/>
+    </g>
+
+    <!-- Gauge arcs and ticks -->
+    <g id="speed-gauge" opacity="0.98">
+      <path d="M401 522 A260 260 0 0 1 632 292" stroke="#347FE4" stroke-width="5"/>
+      <path d="M682 293 A260 260 0 0 1 778 325" stroke="#347FE4" stroke-width="5"/>
+      <path d="M861 399 A260 260 0 0 1 907 521" stroke="#1D98D0" stroke-width="5"/>
+      <path d="M908 574 A260 260 0 0 1 853 706" stroke="#2AB7CA" stroke-width="5"/>
+
+      <path d="M469 553 A191 191 0 0 1 844 553" stroke="#0B72DF" stroke-width="5" stroke-dasharray="30 28"/>
+      <path d="M530 553 A130 130 0 0 1 791 553" stroke="#2DAED4" stroke-width="4" stroke-dasharray="44 25"/>
+
+      <path d="M656 273 L656 313" stroke="#FFFFFF" stroke-width="17"/>
+      <path d="M656 273 L656 313" stroke="#075DD9" stroke-width="7"/>
+      <path d="M380 545 L420 545" stroke="#FFFFFF" stroke-width="17"/>
+      <path d="M380 545 L420 545" stroke="#075DD9" stroke-width="7"/>
+      <path d="M892 545 L931 545" stroke="#FFFFFF" stroke-width="17"/>
+      <path d="M892 545 L931 545" stroke="#0797B8" stroke-width="7"/>
+    </g>
+
+    <!-- Gauge needle -->
+    <g id="needle">
+      <path d="M661 537 L810 305 L891 385 L672 549 Z" fill="url(#needleGrad)" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/>
+      <path d="M677 545 L810 330" stroke="#14B9C7" stroke-width="8" stroke-opacity="0.22"/>
+      <circle cx="661" cy="538" r="28" fill="#0061D7" stroke="#FFFFFF" stroke-width="8"/>
+    </g>
+
+    <!-- Arrow from chunks to KV cache -->
+    <g id="reuse-arrow">
+      <path d="M304 606 C350 606 358 656 408 657 L455 657" stroke="#FFFFFF" stroke-width="57"/>
+      <path d="M304 606 C350 606 358 656 408 657 L455 657" stroke="url(#arrowGrad)" stroke-width="37"/>
+      <path d="M451 615 L505 657 L451 699 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="18"/>
+      <path d="M452 620 L499 657 L452 694 Z" fill="#004FC9" stroke="#004FC9" stroke-width="5"/>
+    </g>
+
+    <!-- Left stacked reusable chunks -->
+    <g id="left-chunk-stack">
+      <g id="row-blue">
+        <rect x="167" y="496" width="163" height="78" rx="16" fill="url(#blockBlue)"/>
+        <rect x="167" y="496" width="163" height="78" rx="16" stroke="#FFFFFF" stroke-width="13"/>
+      </g>
+      <g id="row-teal-blue">
+        <rect x="167" y="579" width="163" height="78" rx="16" fill="url(#blockTealBlue)"/>
+        <rect x="167" y="579" width="163" height="78" rx="16" stroke="#FFFFFF" stroke-width="13"/>
+      </g>
+      <g id="row-cyan">
+        <rect x="167" y="662" width="163" height="78" rx="16" fill="url(#blockCyan)"/>
+        <rect x="167" y="662" width="163" height="78" rx="16" stroke="#FFFFFF" stroke-width="13"/>
+      </g>
+      <g id="row-purple">
+        <rect x="167" y="745" width="163" height="78" rx="16" fill="url(#blockPurple)"/>
+        <rect x="167" y="745" width="163" height="78" rx="16" stroke="#FFFFFF" stroke-width="13"/>
+      </g>
+
+      <g id="left-dots" stroke="#FFFFFF" stroke-width="8">
+        <circle cx="80" cy="535" r="10" fill="#0065D9"/>
+        <circle cx="112" cy="535" r="10" fill="#0065D9"/>
+        <circle cx="144" cy="535" r="10" fill="#0065D9"/>
+        <circle cx="80" cy="618" r="10" fill="#0489AD"/>
+        <circle cx="112" cy="618" r="10" fill="#0489AD"/>
+        <circle cx="144" cy="618" r="10" fill="#0489AD"/>
+        <circle cx="80" cy="701" r="10" fill="#13B6BE"/>
+        <circle cx="112" cy="701" r="10" fill="#13B6BE"/>
+        <circle cx="144" cy="701" r="10" fill="#13B6BE"/>
+        <circle cx="80" cy="784" r="10" fill="#6741D1"/>
+        <circle cx="112" cy="784" r="10" fill="#6741D1"/>
+        <circle cx="144" cy="784" r="10" fill="#6741D1"/>
+      </g>
+    </g>
+
+    <!-- K/V interlocking cache tile -->
+    <g id="kv-cache-puzzle">
+      <rect x="507" y="580" width="335" height="225" rx="33" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="15"/>
+      <path id="kv-left-piece-fill" d="M539 580 H668 V656 C668 667 677 674 694 674 C720 674 720 719 694 719 C677 719 668 727 668 741 V805 H539 C521 805 507 791 507 773 V612 C507 594 521 580 539 580 Z" fill="url(#blueTile)"/>
+      <path id="kv-right-piece-fill" d="M668 580 H810 C828 580 842 594 842 612 V773 C842 791 828 805 810 805 H668 V741 C668 727 677 719 694 719 C720 719 720 674 694 674 C677 674 668 667 668 656 Z" fill="url(#tealTile)"/>
+      <rect x="507" y="580" width="335" height="225" rx="33" stroke="#FFFFFF" stroke-width="7"/>
+      <path id="kv-puzzle-seam" d="M668 580 V656 C668 667 677 674 694 674 C720 674 720 719 694 719 C677 719 668 727 668 741 V805" stroke="#FFFFFF" stroke-width="7"/>
+      <text x="594" y="728" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="92" fill="#FFFFFF" stroke="none">K</text>
+      <text x="751" y="728" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="92" fill="#FFFFFF" stroke="none">V</text>
+    </g>
+  </g>
+</svg>

@@ -2,22 +2,16 @@
 LongBench / RULER utilities for Blend evaluation.
 
 Supports: hotpotqa, 2wikimqa, musique, ruler_vt, ruler_mq, ruler_mv
-Metrics : F1, string-match-all
+Metrics : F-Measure, string-match-all
 """
 
-import re
 import json
-import string
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional, Any
-from collections import Counter
+from typing import List, Dict, Tuple
 
 from rouge_score import rouge_scorer as _rouge_scorer
 
-# ==================== Dataset Configuration ====================
-
 RULER_DATASETS = ("ruler_vt", "ruler_mq", "ruler_mv")
-DATASETS = ("hotpotqa", "2wikimqa", "musique", *RULER_DATASETS)
 
 SYSTEM_PROMPT = (
     "You are a highly precise question-answering assistant.\n\n"
@@ -115,8 +109,6 @@ MAX_NEW_TOKENS_BY_DATASET = {
 DEFAULT_CHUNK_TOPK = 20
 
 
-# ==================== Data Loading ====================
-
 def load_dataset(dataset_path: str) -> List[Dict]:
     """Load a JSONL dataset file."""
     path = Path(dataset_path)
@@ -125,8 +117,6 @@ def load_dataset(dataset_path: str) -> List[Dict]:
     with open(path, "r", encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
 
-
-# ==================== Prompt Building ====================
 
 def normalize_question(question: str) -> str:
     """Lowercase first letter and ensure trailing '?'."""
@@ -158,60 +148,12 @@ def build_prompt_for_dataset(
     return docs, [QUERY_PREFIX, normalize_question(input_text)]
 
 
-# ==================== Scoring Functions ====================
-
-def _normalize_answer(s: str) -> str:
-    """Lower text and remove punctuation, articles, extra whitespace."""
-    s = s.lower()
-    s = re.sub(r"\b(a|an|the)\b", " ", s)
-    s = "".join(ch for ch in s if ch not in set(string.punctuation))
-    return " ".join(s.split())
-
-
-def _parse_generation(s: str) -> str:
-    """Take the first non-empty line from the generation."""
-    s = s.lstrip("\n").strip()
-    if not s:
-        return ""
-    first_line = s.split("\n")[0].strip()
-    if first_line.lower().startswith("yes"):
-        return "Yes"
-    if first_line.split()[0].lower().startswith("no"):
-        return "No"
-    return first_line
-
-
-def scorer_f1(
-    prediction: str, ground_truth: str, tokenizer: Optional[Any] = None
-) -> float:
-    """Token-level F1 score (word-level or sub-word-level with tokenizer)."""
-    if tokenizer is None:
-        pred_toks = _normalize_answer(prediction).split()
-        gold_toks = _normalize_answer(ground_truth).split()
-    else:
-        prediction = _parse_generation(prediction)
-        pred_toks = tokenizer.encode(_normalize_answer(prediction))[1:]
-        gold_toks = tokenizer.encode(_normalize_answer(ground_truth))[1:]
-
-    if not pred_toks or not gold_toks:
-        return float(int(pred_toks == gold_toks)) if tokenizer else 0.0
-
-    common = Counter(pred_toks) & Counter(gold_toks)
-    num_same = sum(common.values())
-    if num_same == 0:
-        return 0.0
-    precision = num_same / len(pred_toks)
-    recall = num_same / len(gold_toks)
-    return 2 * precision * recall / (precision + recall)
-
-
-def scorer_rouge(prediction: str, ground_truth: str) -> float:
-    """ROUGE-L F-measure."""
+def scorer_f1(prediction: str, ground_truth: str) -> float:
+    """F1 score from rouge_scorer."""
     if not prediction.strip() or not ground_truth.strip():
         return 0.0
     scorer = _rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
-    scores = scorer.score(ground_truth, prediction)
-    return scores["rougeL"].fmeasure
+    return scorer.score(ground_truth, prediction)["rougeL"].fmeasure
 
 
 def scorer_string_match_all(prediction: str, ground_truths: List[str]) -> float:
@@ -223,15 +165,6 @@ def scorer_string_match_all(prediction: str, ground_truths: List[str]) -> float:
     return hits / len(ground_truths)
 
 
-# ==================== Unified Evaluation ====================
-
-# metric_type -> scorer callable
-_METRIC_SCORERS = {
-    "f1": scorer_f1,
-    "rouge": scorer_rouge,
-}
-
-# dataset -> metric_type
 TASK_METRICS = {
     "hotpotqa": "f1",
     "2wikimqa": "f1",
@@ -243,8 +176,7 @@ TASK_METRICS = {
 
 METRIC_DISPLAY = {
     "f1": "F1",
-    "rouge": "ROUGE-L",
-    "string_match_all": "StringMatchAll",
+    "string_match_all": "sm",
 }
 
 
@@ -252,7 +184,6 @@ def evaluate_sample(
     prediction: str,
     ground_truths: List[str],
     dataset_name: str,
-    tokenizer: Optional[Any] = None,
 ) -> float:
     """Evaluate prediction against ground truths; returns max score."""
     if not ground_truths:
@@ -261,20 +192,13 @@ def evaluate_sample(
     if metric_type == "string_match_all":
         return scorer_string_match_all(prediction, ground_truths)
 
-    scorer_fn = _METRIC_SCORERS[metric_type]
-
     best = 0.0
     for truth in ground_truths:
-        if metric_type == "f1":
-            score = scorer_fn(prediction, truth, tokenizer)
-        else:
-            score = scorer_fn(prediction, truth)
+        score = scorer_f1(prediction, truth)
         if score > best:
             best = score
     return best
 
-
-# ==================== Simple Accessors ====================
 
 def get_system_prompt(_dataset_name: str) -> str:
     return RULER_SYS_INSTRUCT.get(_dataset_name, SYSTEM_PROMPT)

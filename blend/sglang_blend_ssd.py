@@ -34,10 +34,14 @@ from blend_common import (
     DEFAULT_DATA_DIR,
     BLEND_SEP,
     get_critical_layers,
+    set_fuserag_layers,
     set_ours_layers,
+    set_prophetkv_layers,
     BlendEngineBase,
 )
 from qcfuse_config import (
+    BASELINE_DIGEST_RATIOS,
+    BLEND_BASELINES,
     DEFAULT_BLEND_RATIO,
     DEFAULT_CONTEXT_N_SINK,
     DEFAULT_CRITICAL_LAYERS,
@@ -50,19 +54,25 @@ from qcfuse_config import (
 DIGEST_ZIP_PROMPT = "\n\nRepeat the previous context exactly."
 
 
-def print_final_accuracy(
+def print_final_metrics(
     model_name: str,
     dataset_name: str,
     baseline: str,
     result: dict,
     metric_name: str,
 ) -> None:
-    if result["valid_count"] > 0:
+    if result["metric"]:
         score = sum(result["metric"]) / len(result["metric"])
         score_text = f"{score:.4f}"
+        avg_ttft = sum(result["ttft"]) / len(result["ttft"])
+        ttft_text = f"{avg_ttft:.4f}s"
     else:
         score_text = "nan"
-    print(f"{model_name}\t{dataset_name}\t{baseline}\t{metric_name}={score_text}")
+        ttft_text = "nan"
+    print(
+        f"{model_name}\t{dataset_name}\t{baseline}\t"
+        f"{metric_name}={score_text}\tavg_ttft={ttft_text}"
+    )
 
 
 @dataclass
@@ -80,7 +90,7 @@ class SSDSample:
 
 
 class SSDPipelineEngine(BlendEngineBase):
-    """Two-phase SSD pipeline test engine, fully decoupled from framework internals."""
+    """Two-phase SSD pipeline runner."""
 
     def __init__(
         self,
@@ -100,14 +110,14 @@ class SSDPipelineEngine(BlendEngineBase):
         self.context_cache_source = context_cache_source
         self.critical_layer_topk = DEFAULT_CRITICAL_LAYERS
 
-        # SSD cache base directories (full path: {base}/{model_name}/{dataset_name}/sample_{idx})
         self.cache_dir = cache_dir
 
     def _cache_paths(self, dataset_name: str, sample_idx: int) -> tuple[str, str]:
         chunk_dir, query_dir = self._cache_dataset_dirs(dataset_name)
-        chunk = chunk_dir / f"sample_{sample_idx}"
-        query = query_dir / f"sample_{sample_idx}"
-        return str(chunk), str(query)
+        return (
+            str(chunk_dir / f"sample_{sample_idx}"),
+            str(query_dir / f"sample_{sample_idx}"),
+        )
 
     def _cache_dataset_dirs(self, dataset_name: str) -> tuple[Path, Path]:
         base = Path(self.cache_dir)
@@ -205,20 +215,6 @@ class SSDPipelineEngine(BlendEngineBase):
             "ssd_cache_path_query": sample.sample_dir_query,
         }
 
-    def _sample_has_cache(
-        self,
-        sample_dir_chunk: str,
-        sample_dir_query: str,
-        *,
-        require_query: Optional[bool] = None,
-    ) -> bool:
-        if require_query is None:
-            require_query = self._requires_query_cache()
-        return self._has_cache(
-            sample_dir_chunk,
-            sample_dir_query,
-            require_query=require_query,
-        )
 
     def _blend_args(
         self,
@@ -226,7 +222,6 @@ class SSDPipelineEngine(BlendEngineBase):
         ratio: float,
         *,
         save_query_cache: bool = False,
-        sample: Optional[SSDSample] = None,
         query_critical_layers: Optional[List[int]] = None,
     ) -> dict:
         args = {
@@ -289,7 +284,9 @@ class SSDPipelineEngine(BlendEngineBase):
 
         sample_dir_chunk, sample_dir_query = self._cache_paths(dataset_name, sample_idx)
         docs, q_prompt = build_prompt_for_dataset(example, dataset_name)
-        prompt, query_sep = self._build_prompt(system_prompt, docs, q_prompt, use_sep=True)
+        prompt, query_sep = self._build_prompt(
+            system_prompt, docs, q_prompt, use_sep=True
+        )
         plain_prompt, _ = self._build_prompt(
             system_prompt, docs, q_prompt, use_sep=False
         )
@@ -304,9 +301,10 @@ class SSDPipelineEngine(BlendEngineBase):
             query_sep=query_sep,
             sample_dir_chunk=sample_dir_chunk,
             sample_dir_query=sample_dir_query,
-            has_cache=self._sample_has_cache(
+            has_cache=self._has_cache(
                 sample_dir_chunk,
                 sample_dir_query,
+                require_query=self._requires_query_cache(),
             ),
         )
 
@@ -329,25 +327,21 @@ class SSDPipelineEngine(BlendEngineBase):
     def _qcompute_params() -> dict:
         return {"temperature": 0, "max_new_tokens": 0}
 
-    def _append_result(self, bucket: dict, result: dict, sample: SSDSample, dataset_name: str) -> float:
+    def _append_result(
+        self,
+        bucket: dict,
+        result: dict,
+        sample: SSDSample,
+        dataset_name: str,
+    ) -> float:
         score = evaluate_sample(
             result["text"],
             sample.answers,
             dataset_name,
-            tokenizer=self.tokenizer,
         )
         bucket["ttft"].append(result["ttft"])
-        bucket["decode_time"].append(result["decode_time"])
-        bucket["res"].append(result["text"])
-        bucket["ans"].append(sample.answers)
         bucket["metric"].append(score)
-        bucket["valid_count"] += 1
         return score
-
-    @staticmethod
-    def _mark_skipped(bucket: dict, sample: SSDSample):
-        bucket["skipped_count"] += 1
-        bucket["skipped_ids"].append(sample.idx)
 
     def warmup_blend(
         self,
@@ -376,13 +370,13 @@ class SSDPipelineEngine(BlendEngineBase):
                 self._drain_generate(
                     sample.query_sep,
                     self._qcompute_params(),
-                    **self._blend_args("QCOMPUTE", ratio, sample=sample),
+                    **self._blend_args("QCOMPUTE", ratio),
                     **self._ssd_args(sample),
                 )
             self._drain_generate(
                 sample.prompt,
                 {"temperature": 0, "max_new_tokens": 1},
-                **self._blend_args("DO_BLEND_FINISH", ratio, sample=sample),
+                **self._blend_args("DO_BLEND_FINISH", ratio),
                 **self._ssd_args(sample),
             )
 
@@ -399,14 +393,11 @@ class SSDPipelineEngine(BlendEngineBase):
 
         for idx, example in enumerate(dataset):
             sample_dir_chunk, sample_dir_query = self._cache_paths(dataset_name, idx)
-            require_query = True
 
-            # Phase1 always materializes query cache in the ours critical-layer
-            # format for the configured digest ratio.
             has_cache = self._has_cache(
                 sample_dir_chunk,
                 sample_dir_query,
-                require_query=require_query,
+                require_query=True,
                 query_critical_layers=query_critical_layers,
             )
             if has_cache:
@@ -429,11 +420,11 @@ class SSDPipelineEngine(BlendEngineBase):
             if self._has_cache(
                 sample_dir_chunk,
                 sample_dir_query,
-                require_query=require_query,
+                require_query=True,
                 query_critical_layers=query_critical_layers,
             ):
                 continue
-            elif require_query and self._has_cache(
+            if self._has_cache(
                 sample_dir_chunk, sample_dir_query, require_query=False
             ):
                 raise RuntimeError(
@@ -452,42 +443,32 @@ class SSDPipelineEngine(BlendEngineBase):
         result_bucket = {
             "ttft": [],
             "metric": [],
-            "res": [],
-            "ans": [],
-            "decode_time": [],
-            "valid_count": 0,
-            "skipped_count": 0,
-            "skipped_ids": [],
         }
 
         has_qcompute = self.method == "attn"
         is_fullcomp = (self.baseline == "fullcomp")
 
-        # Pre-build per-sample data to avoid redundant work in ratio loop
         sample_data = self._prepare_samples(dataset, dataset_name)
 
         max_tokens = get_max_new_tokens(dataset_name)
         params = {"temperature": 0, "max_new_tokens": max_tokens}
 
         for sd in sample_data:
-            # fullcomp: plain forward, no blend/SSD
             if is_fullcomp:
                 result = self._timed_generate(sd.plain_prompt, params)
                 self._append_result(result_bucket, result, sd, dataset_name)
                 continue
 
             if not sd.has_cache:
-                self._mark_skipped(result_bucket, sd)
                 continue
 
-            # QCOMPUTE
             q_time = 0
             if has_qcompute:
                 start_q = time.time()
                 self._drain_generate(
                     sd.query_sep,
                     self._qcompute_params(),
-                    **self._blend_args("QCOMPUTE", ratio, sample=sd),
+                    **self._blend_args("QCOMPUTE", ratio),
                     **self._ssd_args(sd),
                 )
                 q_time = time.time() - start_q
@@ -495,7 +476,7 @@ class SSDPipelineEngine(BlendEngineBase):
             result = self._timed_generate(
                 sd.prompt,
                 params,
-                **self._blend_args("DO_BLEND_FINISH", ratio, sample=sd),
+                **self._blend_args("DO_BLEND_FINISH", ratio),
                 **self._ssd_args(sd),
             )
             result["ttft"] += q_time
@@ -512,7 +493,7 @@ def main():
         "--baseline",
         default="ours",
         choices=SUPPORTED_BASELINES,
-        help="Baseline to run: fullcomp or ours",
+        help="Baseline to run: fullcomp, ours, fuserag, or prophetkv",
     )
     parser.add_argument("--size", type=int, default=200)
     parser.add_argument(
@@ -562,19 +543,22 @@ def main():
     ) as engine:
         engine.warmup(num_warmup=3)
         engine.set_baseline(args.baseline)
-        if args.baseline == "ours":
+        if args.baseline in BLEND_BASELINES:
             engine.context_enhance = True
             engine.context_cache_source = "query"
-            set_ours_layers(
-                engine,
-                model_name,
-            )
+            engine.digest_ratio = BASELINE_DIGEST_RATIOS[args.baseline]
+            if args.baseline == "ours":
+                set_ours_layers(engine, model_name)
+            elif args.baseline == "fuserag":
+                set_fuserag_layers(engine, model_name)
+            elif args.baseline == "prophetkv":
+                set_prophetkv_layers(engine, model_name)
         else:
             engine.context_enhance = False
             engine.context_cache_source = "none"
             engine.critical_layers = None
 
-        if args.baseline == "ours":
+        if args.baseline in BLEND_BASELINES:
             engine.phase1_offline(dataset, dataset_name)
             ratio = DEFAULT_BLEND_RATIO
         else:
@@ -586,7 +570,7 @@ def main():
             dataset_name,
             ratio,
         )
-        print_final_accuracy(
+        print_final_metrics(
             model_name,
             dataset_name,
             args.baseline,

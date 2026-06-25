@@ -1,12 +1,19 @@
 """QCFuse configuration for the SSD-backed blend runner."""
 
-DIGEST_INDEX_LABEL = "kvzip@10%"
 DIGEST_INDEX_METHOD = "kvzip"
 DIGEST_RATIO = 0.1
-DEFAULT_BLEND_RATIO = 0.1
+DEFAULT_BLEND_RATIO = 0.5
 DEFAULT_CONTEXT_N_SINK = 4
 DEFAULT_CRITICAL_LAYERS = 3
-SUPPORTED_BASELINES = ("fullcomp", "ours")
+FUSERAG_DIGEST_RATIO = 0.0
+PROPHETKV_DIGEST_RATIO = 1.0
+BLEND_BASELINES = ("ours", "fuserag", "prophetkv")
+SUPPORTED_BASELINES = ("fullcomp",) + BLEND_BASELINES
+BASELINE_DIGEST_RATIOS = {
+    "ours": DIGEST_RATIO,
+    "fuserag": FUSERAG_DIGEST_RATIO,
+    "prophetkv": PROPHETKV_DIGEST_RATIO,
+}
 
 # Model-specific Top-10 critical layers. Values are 0-based layer ids and are
 # consumed by the runtime critical_layers request argument.
